@@ -99,6 +99,41 @@ router.post('/movieDel', function(req, res, next) {
 	}
 });
 
+router.post('/movieUpdate', function(req, res, next) {
+	if (!req.body.movieId) {
+		res.json({status: 1, message: "电影id传递失败"});
+		return;
+	}
+	if (!req.body.username) {
+		res.json({status: 1, message: "用户名为空"});
+		return;
+	}
+	if (!req.body.token) {
+		res.json({status: 1, message: "登录出错"});
+		return;
+	}
+	if (!req.body.id) {
+		res.json({status: 1, message: "用户传递错误"});
+		return;
+	}
+	
+	var saveData = req.body.movieInfo;
+	var check = checkAdminPower(req.body.username, req.body.token, req.body.id);
+	if (check.error == 0) {
+		user.findByUsername(req.body.username, function(err, findUser) {
+			if (findUser[0].userAdmin && !findUser[0].userStop) {
+				movie.update({_id: req.body.movieId}, function(err, updateMovie) {
+					res.json({status: 0, message: '修改成功', data: updateMovie});
+				})
+			} else {
+				res.json({status: 1, message: "用户没有获得权限或者已经停用"});
+			}
+		})
+	} else {
+		res.json({status: 1, message: check.message});
+	}
+});
+
 function checkAdminPower (username, token, id) {
 	if (!username) {
 		return {error: 1, message: '登录出错'};
