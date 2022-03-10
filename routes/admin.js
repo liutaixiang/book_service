@@ -6,6 +6,8 @@ var movie = require('../models/movie');
 var comment = require('../models/comment');
 var article = require('../models/article');
 var recommend = require('../models/recommend');
+var crypto = require('crypto');
+const init_token = 'TKL02o'
 
 router.post('/movieAdd', function(req, res, next) {
 	if (!req.body.username) {
@@ -502,16 +504,17 @@ router.post('/delRecommend', function(req, res, next) {
 });
 
 function checkAdminPower (username, token, id) {
-	if (!username) {
-		return {error: 1, message: '登录出错'};
+	if (token == getMD5Password(id)) {
+	    return {error: 0, message: "用户登录成功"}
+	} else {
+	    return {error: 1, message: "用户登录错误"}
 	}
-	if (!token) {
-		return {error: 1, message: '登录出错'};
-	}
-	if (!id) {
-		return {error: 1, message: '登录出错'};
-	}
-	return {error: 0, message: '成功'};
+}
+
+function getMD5Password(id) {
+    var md5 = crypto.createHash('md5');
+    var token_before = id + init_token
+    return md5.update(token_before).digest('hex')
 }
 
 module.exports = router;
